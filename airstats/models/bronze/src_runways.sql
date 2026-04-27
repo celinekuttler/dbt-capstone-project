@@ -1,6 +1,8 @@
---- runways
----id, airport_ref, airport_ident, closed
-
+{{
+    config(
+        materialized = 'view'
+    )
+}}
 WITH raw_runways AS (
     SELECT * FROM {{ source('airstats','runways')}}
 )

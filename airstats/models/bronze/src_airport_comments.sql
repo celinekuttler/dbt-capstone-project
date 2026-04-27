@@ -1,6 +1,8 @@
---- comments 
---- id, airport_ref, airport_ident, date
-
+{{
+    config(
+        materialized = 'view'
+    )
+}}
 WITH raw_comments AS (
     SELECT * FROM {{ source('airstats','comments')}}
 )

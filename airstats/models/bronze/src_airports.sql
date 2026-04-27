@@ -1,4 +1,8 @@
-
+{{
+    config(
+        materialized = 'view'
+    )
+}}
 WITH raw_airports AS (
     SELECT * FROM {{ source('airstats','airports')}}
 )
