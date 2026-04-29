@@ -32,5 +32,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   airstats:
     +materialized: view
-    silver:
+    +silver:
       +materialized:table
+
+data_tests:
+  +store_failures: true 
+  
