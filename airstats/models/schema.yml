@@ -1,0 +1,138 @@
+models:
+  - name: silver_airports
+    description: Cleansed table with airport information
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('src_airports')
+    columns:
+      - name: airport_ident
+        description: identifier of the airport (international format)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_unique:
+              arguments: 
+                row_condition: "id is not null" # (Optional)
+          - not_null
+      - name: airport_type 
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - small_airport 
+                  - medium_airport 
+                  - large_airport
+                  - heliport
+                  - seaplane_base
+                  - balloonport
+                  - closed
+      - name: id
+        description: identifier of the row in the table 
+        data_tests:
+          - unique 
+          - not_null
+      - name: airport_long
+        data_tests:
+          - not_null 
+      - name: airport_lat
+        data_tests:
+          - not_null
+      - name: airport_name
+        data_tests:
+          - not_null
+      - name: continent
+        data_tests:
+          - not_null
+      - name: iso_country
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_be_between:
+              arguments:
+                min_value: 2 # (Optional)
+                max_value: 3 # (Optional)
+      - name: iso_region
+        data_tests:
+          - not_null
+
+
+
+  - name: silver_runways
+    description: Cleansed table with runway information
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('src_runways')
+          severity: warn
+    columns:
+      - name: runway_id
+        data_tests:
+          - unique 
+          - not_null
+      - name: runway_closed
+        data_tests:
+          - not_null
+      - name: airport_ident
+        description: airport identifier. references the airport table. 
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+              severity: warn 
+      - name: runway_length_ft
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments: 
+                min_value: 0  # (Optional)
+                max_value: 1000000000 # (Optional)
+                row_condition: "runway_length_ft is not null" # (Optional)
+                strictly: false # (Optional. Default is 'false'. Adds an 'or equal to' to the comparison operator for min/max)
+
+      - name: runway_lighted
+        description: is the runway lighted? possible values are true or false 
+        data_tests:
+          - not_null
+      - name: runway_surface
+        description: '{{ doc("silver_runway__runway_surface") }}'
+        data_tests:
+          - not_null
+
+  - name: silver_airport_comments
+    description: Cleansed table with user comments on airports
+    columns:
+      - name: airport_ident
+        description: references the airport 
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+              config:
+                severity: warn
+      - name: comment_body
+        data_tests:
+          - not_null
+      - name: comment_id
+        data_tests:
+          - not_null
+          - unique
+#      - name: comment_subject
+#        data_tests:
+#          - not_null
+      - name: comment_timestamp
+        data_tests:
+          - not_null
+      - name: loaded_at
+        data_tests:
+          - not_null
+      - name: member_nickname
+        data_tests:
+          - not_null
+  
+
+
